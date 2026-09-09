@@ -22,6 +22,7 @@ const frontendDistCandidates = [
 ];
 const frontendDist = frontendDistCandidates.find((candidate) => fs.existsSync(path.join(candidate, 'index.html')));
 const frontendIndex = frontendDist ? path.join(frontendDist, 'index.html') : '';
+const frontendVersion = frontendIndex ? String(Math.floor(fs.statSync(frontendIndex).mtimeMs)) : '';
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
@@ -59,12 +60,24 @@ app.get('/asset-check', (_req, res) => {
 });
 app.use('/api', routes);
 if (frontendDist && frontendIndex) {
+  const sendFrontend = (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    fs.readFile(frontendIndex, 'utf8', (error, html) => {
+      if (error) return next(error);
+      const versionedHtml = html.replace(/(\/assets\/[^"']+\.(?:js|css))/g, `$1?v=${frontendVersion}`);
+      res.type('html').send(versionedHtml);
+    });
+  };
+
   app.use('/assets', express.static(path.join(frontendDist, 'assets'), {
     fallthrough: false,
     immutable: true,
     maxAge: '1y'
   }));
   app.use(express.static(frontendDist, {
+    index: false,
     setHeaders(res, filePath) {
       if (filePath.endsWith('.html')) {
         res.setHeader('Cache-Control', 'no-store');
@@ -76,10 +89,7 @@ if (frontendDist && frontendIndex) {
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
     if (req.path.startsWith('/assets')) return next();
-    res.setHeader('Cache-Control', 'no-store');
-    res.sendFile(frontendIndex, (error) => {
-      if (error) next(error);
-    });
+    sendFrontend(req, res, next);
   });
 }
 app.use(notFound);
