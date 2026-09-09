@@ -1,0 +1,35 @@
+{
+  "name": "trimurya-transcriber-backend",
+  "version": "1.0.0",
+  "description": "Secure manual transcription backend for Trimurya Transcriber.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "seed": "node src/scripts/seed.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.637.0",
+    "@aws-sdk/lib-storage": "^3.637.0",
+    "@aws-sdk/s3-request-presigner": "^3.637.0",
+    "@smithy/core": "^3.33.3",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "csv-stringify": "^6.5.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.4",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.0",
+    "nanoid": "^5.0.7",
+    "zod": "^3.23.8"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

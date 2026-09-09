@@ -1,0 +1,20 @@
+import { Router } from 'express';
+import { authorize } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
+import { audioUpload } from '../middleware/upload.js';
+import { abortUpload, archiveJob, assignJobs, assignJobsSchema, completeUpload, completeUploadSchema, deleteJob, directUpload, getJob, initiateUpload, initiateUploadSchema, listJobs, playbackUrl, storageConfig, streamAudio, updateJob } from '../controllers/audioController.js';
+
+export const audioRoutes = Router();
+audioRoutes.post('/uploads/direct', authorize('admin'), audioUpload.array('audio'), directUpload);
+audioRoutes.post('/uploads/initiate', authorize('admin'), validate(initiateUploadSchema), initiateUpload);
+audioRoutes.post('/uploads/complete', authorize('admin'), validate(completeUploadSchema), completeUpload);
+audioRoutes.post('/uploads/abort', authorize('admin'), abortUpload);
+audioRoutes.post('/assign', authorize('admin', 'tl'), validate(assignJobsSchema), assignJobs);
+audioRoutes.get('/storage-config', authorize('admin'), storageConfig);
+audioRoutes.get('/', listJobs);
+audioRoutes.get('/:id/playback-url', playbackUrl);
+audioRoutes.get('/:id/stream', streamAudio);
+audioRoutes.get('/:id', getJob);
+audioRoutes.patch('/:id', updateJob);
+audioRoutes.post('/:id/archive', authorize('admin'), archiveJob);
+audioRoutes.delete('/:id', authorize('admin'), deleteJob);
