@@ -11,8 +11,11 @@ if (!fs.existsSync(indexPath)) {
 }
 
 const html = fs.readFileSync(indexPath, 'utf8');
-if (!html.includes('<style>') || !html.includes('<script type="module">')) {
-  console.error('Frontend build must inline CSS and JS into backend/public/index.html.');
+const assetsDir = path.resolve(__dirname, '../../public/assets');
+const hasAssets = fs.existsSync(assetsDir) && fs.readdirSync(assetsDir).some((file) => /\.(js|css)$/.test(file));
+
+if (!html.includes('/assets/') || !hasAssets) {
+  console.error('Frontend build must include backend/public/index.html and backend/public/assets/*.js/css.');
   process.exit(1);
 }
 

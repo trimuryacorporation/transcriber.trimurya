@@ -25,7 +25,6 @@ if (fs.existsSync(path.join(frontendRoot, 'package.json'))) {
   fs.rmSync(publicDir, { recursive: true, force: true });
   fs.cpSync(frontendDist, publicDir, { recursive: true });
   console.log(`Frontend build copied to ${publicDir}`);
-  runNode(path.join(__dirname, 'inlineFrontendAssets.js'));
 } else {
   console.log('Frontend source folder not found; using existing backend/public build.');
 }

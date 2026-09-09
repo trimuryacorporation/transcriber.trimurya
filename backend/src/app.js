@@ -24,7 +24,8 @@ const allowedOrigins = [
 
 app.set('trust proxy', 1);
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' }
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false
 }));
 app.use(cors({
   origin(origin, callback) {
@@ -42,10 +43,12 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 900, standardHeaders: true, l
 
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'trimurya-transcriber-api' }));
 app.get('/asset-check', (_req, res) => {
+  const assetsDir = path.join(frontendPublic, 'assets');
   res.json({
     frontendDist: frontendPublic,
     indexExists: fs.existsSync(frontendIndex),
-    inlineAssets: fs.existsSync(frontendIndex) && fs.readFileSync(frontendIndex, 'utf8').includes('<script type="module">')
+    assetsExists: fs.existsSync(assetsDir),
+    assets: fs.existsSync(assetsDir) ? fs.readdirSync(assetsDir) : []
   });
 });
 app.use('/api', routes);
