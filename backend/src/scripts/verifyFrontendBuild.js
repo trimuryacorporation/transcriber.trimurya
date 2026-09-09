@@ -3,23 +3,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const candidates = [
-  path.resolve(__dirname, '../../public'),
-  path.resolve(process.cwd(), 'backend/public'),
-  path.resolve(process.cwd(), 'public'),
-  path.resolve(process.cwd(), '../frontend/dist'),
-  path.resolve(process.cwd(), 'frontend/dist')
-];
+const indexPath = path.resolve(__dirname, '../../public/index.html');
 
-const dist = candidates.find((candidate) => fs.existsSync(path.join(candidate, 'index.html')));
-const assets = dist ? path.join(dist, 'assets') : '';
-const index = dist ? fs.readFileSync(path.join(dist, 'index.html'), 'utf8') : '';
-const hasInlineAssets = index.includes('<style>') && index.includes('<script type="module">');
-const hasAssets = assets && fs.existsSync(assets) && fs.readdirSync(assets).some((file) => /\.(js|css)$/.test(file));
-
-if (!dist || (!hasAssets && !hasInlineAssets)) {
-  console.error('Frontend build missing. Expected index.html with inline assets or assets/*.js/css.');
+if (!fs.existsSync(indexPath)) {
+  console.error(`Frontend build missing: ${indexPath}`);
   process.exit(1);
 }
 
-console.log(`Frontend build verified: ${dist}`);
+const html = fs.readFileSync(indexPath, 'utf8');
+if (!html.includes('<style>') || !html.includes('<script type="module">')) {
+  console.error('Frontend build must inline CSS and JS into backend/public/index.html.');
+  process.exit(1);
+}
+
+console.log(`Frontend build verified: ${indexPath}`);

@@ -7,6 +7,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const backendRoot = path.resolve(__dirname, '../..');
 const repoRoot = path.resolve(backendRoot, '..');
 const frontendRoot = path.join(repoRoot, 'frontend');
+const frontendDist = path.join(frontendRoot, 'dist');
+const publicDir = path.join(backendRoot, 'public');
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 function run(command, args, cwd = backendRoot) {
@@ -20,7 +22,9 @@ function runNode(script) {
 if (fs.existsSync(path.join(frontendRoot, 'package.json'))) {
   run(npm, ['install'], frontendRoot);
   run(npm, ['run', 'build'], frontendRoot);
-  runNode(path.join(__dirname, 'copyFrontendBuild.js'));
+  fs.rmSync(publicDir, { recursive: true, force: true });
+  fs.cpSync(frontendDist, publicDir, { recursive: true });
+  console.log(`Frontend build copied to ${publicDir}`);
   runNode(path.join(__dirname, 'inlineFrontendAssets.js'));
 } else {
   console.log('Frontend source folder not found; using existing backend/public build.');
