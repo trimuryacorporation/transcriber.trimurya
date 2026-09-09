@@ -14,6 +14,8 @@ import { errorHandler, notFound } from './middleware/error.js';
 export const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const frontendDistCandidates = [
+  path.resolve(__dirname, '../public'),
+  path.resolve(process.cwd(), 'public'),
   path.resolve(__dirname, '../../frontend/dist'),
   path.resolve(process.cwd(), '../frontend/dist'),
   path.resolve(process.cwd(), 'frontend/dist')
@@ -46,8 +48,22 @@ app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 900, standardHeaders: true, legacyHeaders: false }));
 
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'trimurya-transcriber-api' }));
+app.get('/asset-check', (_req, res) => {
+  const assetsDir = frontendDist ? path.join(frontendDist, 'assets') : '';
+  res.json({
+    frontendDist: frontendDist || null,
+    indexExists: Boolean(frontendIndex && fs.existsSync(frontendIndex)),
+    assetsExists: Boolean(assetsDir && fs.existsSync(assetsDir)),
+    assets: assetsDir && fs.existsSync(assetsDir) ? fs.readdirSync(assetsDir) : []
+  });
+});
 app.use('/api', routes);
 if (frontendDist && frontendIndex) {
+  app.use('/assets', express.static(path.join(frontendDist, 'assets'), {
+    fallthrough: false,
+    immutable: true,
+    maxAge: '1y'
+  }));
   app.use(express.static(frontendDist, {
     setHeaders(res, filePath) {
       if (filePath.endsWith('.html')) {

@@ -1,9 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(process.cwd(), '..');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const candidates = [
-  path.resolve(root, 'frontend/dist'),
+  path.resolve(__dirname, '../../public'),
+  path.resolve(process.cwd(), 'backend/public'),
+  path.resolve(process.cwd(), 'public'),
+  path.resolve(process.cwd(), '../frontend/dist'),
   path.resolve(process.cwd(), 'frontend/dist')
 ];
 
