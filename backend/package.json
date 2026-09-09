@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
+    "render-build": "npm install && npm install --prefix ../frontend && npm run build --prefix ../frontend",
     "seed": "node src/scripts/seed.js"
   },
   "dependencies": {

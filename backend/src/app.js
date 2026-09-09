@@ -13,8 +13,13 @@ import { errorHandler, notFound } from './middleware/error.js';
 
 export const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const frontendDist = path.resolve(__dirname, '../../frontend/dist');
-const frontendIndex = path.join(frontendDist, 'index.html');
+const frontendDistCandidates = [
+  path.resolve(__dirname, '../../frontend/dist'),
+  path.resolve(process.cwd(), '../frontend/dist'),
+  path.resolve(process.cwd(), 'frontend/dist')
+];
+const frontendDist = frontendDistCandidates.find((candidate) => fs.existsSync(path.join(candidate, 'index.html')));
+const frontendIndex = frontendDist ? path.join(frontendDist, 'index.html') : '';
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
@@ -42,7 +47,7 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 900, standardHeaders: true, l
 
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'trimurya-transcriber-api' }));
 app.use('/api', routes);
-if (fs.existsSync(frontendIndex)) {
+if (frontendDist && frontendIndex) {
   app.use(express.static(frontendDist));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
