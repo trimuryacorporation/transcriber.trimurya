@@ -13,10 +13,12 @@ const candidates = [
 
 const dist = candidates.find((candidate) => fs.existsSync(path.join(candidate, 'index.html')));
 const assets = dist ? path.join(dist, 'assets') : '';
+const index = dist ? fs.readFileSync(path.join(dist, 'index.html'), 'utf8') : '';
+const hasInlineAssets = index.includes('<style>') && index.includes('<script type="module">');
 const hasAssets = assets && fs.existsSync(assets) && fs.readdirSync(assets).some((file) => /\.(js|css)$/.test(file));
 
-if (!dist || !hasAssets) {
-  console.error('Frontend build missing. Expected frontend/dist/index.html and frontend/dist/assets/*.js/css.');
+if (!dist || (!hasAssets && !hasInlineAssets)) {
+  console.error('Frontend build missing. Expected index.html with inline assets or assets/*.js/css.');
   process.exit(1);
 }
 

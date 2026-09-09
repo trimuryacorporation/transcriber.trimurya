@@ -21,6 +21,7 @@ if (fs.existsSync(path.join(frontendRoot, 'package.json'))) {
   run(npm, ['install'], frontendRoot);
   run(npm, ['run', 'build'], frontendRoot);
   runNode(path.join(__dirname, 'copyFrontendBuild.js'));
+  runNode(path.join(__dirname, 'inlineFrontendAssets.js'));
 } else {
   console.log('Frontend source folder not found; using existing backend/public build.');
 }

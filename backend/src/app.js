@@ -66,7 +66,9 @@ if (frontendDist && frontendIndex) {
     res.setHeader('Expires', '0');
     fs.readFile(frontendIndex, 'utf8', (error, html) => {
       if (error) return next(error);
-      const versionedHtml = html.replace(/(\/assets\/[^"']+\.(?:js|css))/g, `$1?v=${frontendVersion}`);
+      const versionedHtml = html.includes('/assets/')
+        ? html.replace(/(\/assets\/[^"']+\.(?:js|css))/g, `$1?v=${frontendVersion}`)
+        : html;
       res.type('html').send(versionedHtml);
     });
   };
