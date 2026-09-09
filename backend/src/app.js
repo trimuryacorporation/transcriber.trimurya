@@ -73,8 +73,12 @@ if (frontendDist && frontendIndex) {
 
   app.use('/assets', express.static(path.join(frontendDist, 'assets'), {
     fallthrough: false,
-    immutable: true,
-    maxAge: '1y'
+    maxAge: 0,
+    setHeaders(res) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
   }));
   app.use(express.static(frontendDist, {
     index: false,
@@ -82,7 +86,7 @@ if (frontendDist && frontendIndex) {
       if (filePath.endsWith('.html')) {
         res.setHeader('Cache-Control', 'no-store');
       } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
       }
     }
   }));
