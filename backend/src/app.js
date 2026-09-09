@@ -70,6 +70,7 @@ if (fs.existsSync(frontendIndex)) {
   }));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
+    if (req.path.startsWith('/assets')) return next();
     sendFrontend(req, res, next);
   });
 }
