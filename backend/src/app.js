@@ -71,6 +71,18 @@ if (frontendDist && frontendIndex) {
     });
   };
 
+  app.get('/assets/:fileName', (req, res, next) => {
+    const fileName = path.basename(req.params.fileName);
+    const filePath = path.join(frontendDist, 'assets', fileName);
+    if (!fs.existsSync(filePath)) return next();
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    if (fileName.endsWith('.css')) res.type('text/css');
+    if (fileName.endsWith('.js')) res.type('application/javascript');
+    fs.createReadStream(filePath).on('error', next).pipe(res);
+  });
+
   app.use('/assets', express.static(path.join(frontendDist, 'assets'), {
     fallthrough: false,
     maxAge: 0,
