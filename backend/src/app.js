@@ -48,9 +48,19 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 900, standardHeaders: true, l
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'trimurya-transcriber-api' }));
 app.use('/api', routes);
 if (frontendDist && frontendIndex) {
-  app.use(express.static(frontendDist));
+  app.use(express.static(frontendDist, {
+    setHeaders(res, filePath) {
+      if (filePath.endsWith('.html')) {
+        res.setHeader('Cache-Control', 'no-store');
+      } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    }
+  }));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api')) return next();
+    if (req.path.startsWith('/assets')) return next();
+    res.setHeader('Cache-Control', 'no-store');
     res.sendFile(frontendIndex, (error) => {
       if (error) next(error);
     });
