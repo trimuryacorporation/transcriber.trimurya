@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -9,6 +11,8 @@ import routes from './routes/index.js';
 import { errorHandler, notFound } from './middleware/error.js';
 
 export const app = express();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const frontendDist = path.resolve(__dirname, '../../frontend/dist');
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
@@ -36,5 +40,14 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 900, standardHeaders: true, l
 
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'trimurya-transcriber-api' }));
 app.use('/api', routes);
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(frontendDist, 'index.html'), (error) => {
+      if (error) next(error);
+    });
+  });
+}
 app.use(notFound);
 app.use(errorHandler);
