@@ -15,6 +15,7 @@ export const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const frontendPublic = path.resolve(__dirname, '../public');
 const frontendIndex = path.join(frontendPublic, 'index.html');
+const frontendVersion = fs.existsSync(frontendIndex) ? String(Math.floor(fs.statSync(frontendIndex).mtimeMs)) : '';
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
@@ -57,8 +58,10 @@ if (fs.existsSync(frontendIndex)) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    res.sendFile(frontendIndex, (error) => {
-      if (error) next(error);
+    fs.readFile(frontendIndex, 'utf8', (error, html) => {
+      if (error) return next(error);
+      const versionedHtml = html.replace(/(\/assets\/[^"']+\.(?:js|css))/g, `$1?v=${frontendVersion}`);
+      res.type('html').send(versionedHtml);
     });
   };
 
