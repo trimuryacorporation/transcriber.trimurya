@@ -115,6 +115,12 @@ export function SettingsPage() {
 }
 
 function AccessRow({ title, description, enabled, onChange }) {
+  const buttonStyle = {
+    backgroundColor: enabled ? '#059669' : '#dc2626',
+    borderColor: enabled ? '#047857' : '#b91c1c',
+    color: '#ffffff'
+  };
+
   return <div className="flex flex-wrap items-center justify-between gap-4 p-4">
     <div className="min-w-0">
       <p className="font-semibold text-slate-950">{title}</p>
@@ -124,7 +130,8 @@ function AccessRow({ title, description, enabled, onChange }) {
       type="button"
       role="switch"
       aria-checked={enabled}
-      className={`inline-flex h-10 min-w-28 items-center justify-center gap-2 rounded-md px-4 text-sm font-bold text-white shadow-sm transition ${enabled ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'}`}
+      className="inline-flex h-10 min-w-28 items-center justify-center gap-2 rounded-md border px-4 text-sm font-bold shadow-sm transition hover:brightness-95"
+      style={buttonStyle}
       onClick={() => onChange(!enabled)}
       title={enabled ? 'Enabled' : 'Disabled'}
     >
