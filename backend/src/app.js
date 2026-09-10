@@ -20,6 +20,8 @@ const frontendVersion = fs.existsSync(frontendIndex) ? String(Math.floor(fs.stat
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
+  ...(process.env.CLIENT_URLS || '').split(',').map((origin) => origin.trim()),
+  'https://transcriber-trimurya.vercel.app',
   'http://localhost:5173',
   'http://127.0.0.1:5173'
 ].filter(Boolean);
