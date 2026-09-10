@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import { Archive, Download, FileAudio, FolderKanban, Plus, Search, ShieldCheck, Trash2, UsersRound } from 'lucide-react';
+import { Archive, ClipboardCheck, Download, FileAudio, FolderKanban, Plus, Search, ShieldCheck, Trash2, UsersRound } from 'lucide-react';
 import { api, downloadUrl } from '../api/client.js';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { EmptyState } from '../components/EmptyState.jsx';
@@ -88,6 +88,11 @@ export function ResourcePage({ kind }) {
     active: items.filter((item) => !['Approved', 'Archived'].includes(item.status)).length,
     exceptions: items.filter((item) => ['Rejected', 'Returned for Correction'].includes(item.status)).length
   } : null;
+  const recordSummary = kind !== 'files' ? {
+    total: items.length,
+    active: items.filter((item) => item.isActive !== false).length,
+    inactive: items.filter((item) => item.isActive === false).length
+  } : null;
   return <div className="space-y-5">
     <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -104,17 +109,53 @@ export function ResourcePage({ kind }) {
           <button className="btn-muted h-10"><Search size={16} /> Search</button>
         </form>
       </div>
-      {fileSummary && <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <SummaryTile label="Visible files" value={fileSummary.total} />
-        <SummaryTile label="Active workload" value={fileSummary.active} />
-        <SummaryTile label="Exceptions" value={fileSummary.exceptions} emphasis={fileSummary.exceptions > 0} />
+      {(fileSummary || recordSummary) && <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        {fileSummary ? <>
+          <SummaryTile label="Visible files" value={fileSummary.total} />
+          <SummaryTile label="Active workload" value={fileSummary.active} />
+          <SummaryTile label="Exceptions" value={fileSummary.exceptions} emphasis={fileSummary.exceptions > 0} />
+        </> : <>
+          <SummaryTile label="Total records" value={recordSummary.total} />
+          <SummaryTile label="Active records" value={recordSummary.active} />
+          <SummaryTile label="Inactive records" value={recordSummary.inactive} emphasis={recordSummary.inactive > 0} />
+        </>}
       </div>}
     </section>
-    {kind !== 'files' && canCreateTeam && <form onSubmit={create} className="panel grid gap-3 p-4 md:grid-cols-4">
-      <input placeholder="Name" value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-      {kind === 'team' ? <><input placeholder="Login ID" value={form.loginId || ''} onChange={(e) => setForm({ ...form, loginId: e.target.value })} required /><input placeholder="Email" type="email" value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} required /><select value={form.role || 'transcriber'} onChange={(e) => setForm({ ...form, role: e.target.value })}>{teamRoleOptions.map((role) => <option key={role}>{role}</option>)}</select><input placeholder="Initial password" value={form.password || ''} onChange={(e) => setForm({ ...form, password: e.target.value })} /></> : <><input placeholder="Client" value={form.client || ''} onChange={(e) => setForm({ ...form, client: e.target.value })} /><input placeholder="Language" value={form.language || ''} onChange={(e) => setForm({ ...form, language: e.target.value })} /><input placeholder="Guidelines" value={form.guidelines || ''} onChange={(e) => setForm({ ...form, guidelines: e.target.value })} /></>}
-      <button className="btn-accent md:col-span-4"><Plus size={16} /> Create</button>
-    </form>}
+    {kind !== 'files' && canCreateTeam && <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
+      <div className="mb-5 flex items-start gap-3 border-b border-slate-200 pb-4">
+        <div className="grid h-10 w-10 place-items-center rounded-md bg-blue-50 text-primary"><ClipboardCheck size={19} /></div>
+        <div>
+          <h3 className="font-bold text-slate-950">{kind === 'team' ? 'Create Team Access Record' : 'Create Project Record'}</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            {kind === 'team'
+              ? 'Provision operational access with role, login identity, and initial account credentials.'
+              : 'Define the client, language, and working guidance that will govern assignment and transcription quality.'}
+          </p>
+        </div>
+      </div>
+      <form onSubmit={create} className="grid gap-4 md:grid-cols-4">
+        <div>
+          <label>{kind === 'team' ? 'Full name' : 'Project name'}</label>
+          <input className="mt-1.5" placeholder={kind === 'team' ? 'Enter user name' : 'Enter project name'} value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+        </div>
+        {kind === 'team' ? <>
+          <div><label>Login ID</label><input className="mt-1.5" placeholder="Unique login identifier" value={form.loginId || ''} onChange={(e) => setForm({ ...form, loginId: e.target.value })} required /></div>
+          <div><label>Email address</label><input className="mt-1.5" placeholder="name@example.com" type="email" value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></div>
+          <div><label>Role</label><select className="mt-1.5" value={form.role || 'transcriber'} onChange={(e) => setForm({ ...form, role: e.target.value })}>{teamRoleOptions.map((role) => <option key={role}>{role}</option>)}</select></div>
+          <div className="md:col-span-4"><label>Initial password</label><input className="mt-1.5" placeholder="Temporary credential for first access" value={form.password || ''} onChange={(e) => setForm({ ...form, password: e.target.value })} /></div>
+        </> : <>
+          <div><label>Client</label><input className="mt-1.5" placeholder="Client or business unit" value={form.client || ''} onChange={(e) => setForm({ ...form, client: e.target.value })} /></div>
+          <div><label>Primary language</label><input className="mt-1.5" placeholder="English" value={form.language || ''} onChange={(e) => setForm({ ...form, language: e.target.value })} /></div>
+          <div><label>Transcription guidelines</label><input className="mt-1.5" placeholder="Quality notes or project-specific instructions" value={form.guidelines || ''} onChange={(e) => setForm({ ...form, guidelines: e.target.value })} /></div>
+        </>}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-4 md:col-span-4">
+          <p className="text-sm text-slate-500">
+            {kind === 'team' ? 'New users are created as active records and can be managed from the team table.' : 'New projects become available for upload intake, assignment, and reporting workflows.'}
+          </p>
+          <button className="btn-primary h-10 px-5"><Plus size={16} /> {kind === 'team' ? 'Create Team Record' : 'Create Project Record'}</button>
+        </div>
+      </form>
+    </section>}
     {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
     {!items.length ? <EmptyState /> : <section className="rounded-lg border border-slate-200 bg-white shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
