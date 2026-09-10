@@ -7,47 +7,44 @@ import loginHero from '../assets/transcription-login-hero.png';
 
 function AuthShell({ children, title }) {
   return (
-    <main className="min-h-screen bg-slate-100 text-slate-950">
-      <section className="mx-auto grid min-h-screen w-full max-w-7xl items-center gap-8 px-4 py-8 sm:px-5 lg:grid-cols-[1.08fr_0.92fr] lg:px-8">
-        <div className="relative hidden min-h-[640px] overflow-hidden rounded-lg bg-primary shadow-2xl lg:block">
-          <img
-            src={loginHero}
-            alt="Transcription specialist working with audio waveform and transcript panels"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-primary/20" />
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/85 via-slate-950/45 to-transparent p-8 text-white">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-md bg-white/15 px-3 py-2 text-sm font-semibold backdrop-blur">
-              <AudioLines size={18} />
-              Live transcription workflow
-            </div>
-            <h2 className="max-w-xl text-3xl font-bold leading-tight">
-              Review audio, write transcripts, and move work through approval with confidence.
-            </h2>
-            <div className="mt-6 grid max-w-2xl grid-cols-3 gap-3">
-              {[
-                ['Audio sync', AudioLines],
-                ['Secure access', ShieldCheck],
-                ['Review ready', BadgeCheck]
-              ].map(([label, Icon]) => (
-                <div key={label} className="rounded-md border border-white/15 bg-white/15 p-3 backdrop-blur">
-                  <Icon size={18} />
-                  <p className="mt-2 text-sm font-semibold">{label}</p>
-                </div>
-              ))}
-            </div>
+    <main className="relative min-h-screen overflow-hidden bg-slate-950 text-white">
+      <img
+        src={loginHero}
+        alt="Transcription specialist working with audio waveform and transcript panels"
+        className="absolute inset-0 h-full w-full object-cover object-[42%_center]"
+      />
+      <div className="absolute inset-0 bg-slate-950/45" />
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/48 to-slate-950/28" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/15" />
+
+      <section className="relative z-10 mx-auto grid min-h-screen w-full max-w-7xl items-center gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-[1fr_480px] lg:px-8">
+        <div className="max-w-2xl">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-md border border-white/15 bg-white/15 px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur">
+            <AudioLines size={18} />
+            Secure transcription workspace
+          </div>
+          <h2 className="text-3xl font-bold leading-tight sm:text-5xl">
+            Turn audio into reviewed, organized transcripts.
+          </h2>
+          <p className="mt-5 max-w-xl text-base leading-7 text-blue-50 sm:text-lg">
+            A focused workspace for transcription teams to manage audio, write clean text, review comments, and move files through approval.
+          </p>
+          <div className="mt-6 grid max-w-2xl gap-3 sm:mt-8 sm:grid-cols-3">
+            {[
+              ['Audio sync', AudioLines],
+              ['Protected login', ShieldCheck],
+              ['Review flow', BadgeCheck]
+            ].map(([label, Icon]) => (
+              <div key={label} className="rounded-md border border-white/15 bg-white/15 p-4 shadow-sm backdrop-blur">
+                <Icon size={20} />
+                <p className="mt-3 text-sm font-semibold">{label}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-md lg:max-w-[480px]">
-          <div className="mb-7 lg:hidden">
-            <img
-              src={loginHero}
-              alt="Transcription specialist working"
-              className="h-52 w-full rounded-lg object-cover shadow-soft"
-            />
-          </div>
-          <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-soft sm:p-8">
+        <div className="mx-auto w-full max-w-md lg:max-w-none">
+          <section className="rounded-lg border border-white/20 bg-white/95 p-6 text-slate-950 shadow-2xl backdrop-blur sm:p-8">
             <div className="mb-7 flex items-start gap-4">
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-md bg-primary text-white shadow-sm">
                 <LockKeyhole size={24} />
