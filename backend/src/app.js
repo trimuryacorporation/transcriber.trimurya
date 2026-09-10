@@ -15,6 +15,7 @@ export const app = express();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const frontendPublic = path.resolve(__dirname, '../public');
 const frontendIndex = path.join(frontendPublic, 'index.html');
+const frontendAssets = path.join(frontendPublic, 'assets');
 const frontendVersion = fs.existsSync(frontendIndex) ? String(Math.floor(fs.statSync(frontendIndex).mtimeMs)) : '';
 
 const allowedOrigins = [
@@ -28,6 +29,17 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   contentSecurityPolicy: false
 }));
+if (fs.existsSync(frontendAssets)) {
+  app.use('/assets', express.static(frontendAssets, {
+    fallthrough: false,
+    immutable: true,
+    maxAge: '1y',
+    setHeaders(res, filePath) {
+      if (filePath.endsWith('.css')) res.type('text/css');
+      if (filePath.endsWith('.js')) res.type('text/javascript');
+    }
+  }));
+}
 app.use(cors({
   origin(origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
@@ -44,12 +56,11 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 900, standardHeaders: true, l
 
 app.get('/health', (_req, res) => res.json({ ok: true, service: 'trimurya-transcriber-api' }));
 app.get('/asset-check', (_req, res) => {
-  const assetsDir = path.join(frontendPublic, 'assets');
   res.json({
     frontendDist: frontendPublic,
     indexExists: fs.existsSync(frontendIndex),
-    assetsExists: fs.existsSync(assetsDir),
-    assets: fs.existsSync(assetsDir) ? fs.readdirSync(assetsDir) : []
+    assetsExists: fs.existsSync(frontendAssets),
+    assets: fs.existsSync(frontendAssets) ? fs.readdirSync(frontendAssets) : []
   });
 });
 app.use('/api', routes);
@@ -67,6 +78,7 @@ if (fs.existsSync(frontendIndex)) {
 
   app.use(express.static(frontendPublic, {
     index: false,
+    redirect: false,
     setHeaders(res, filePath) {
       if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-store');
     }
