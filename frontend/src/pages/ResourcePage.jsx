@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import { Archive, ClipboardCheck, Download, FileAudio, FolderKanban, Plus, Search, ShieldCheck, Trash2, UsersRound } from 'lucide-react';
+import { Archive, ClipboardCheck, Download, FileAudio, FolderKanban, KeyRound, Plus, Search, ShieldCheck, Trash2, UsersRound } from 'lucide-react';
 import { api, downloadUrl } from '../api/client.js';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { EmptyState } from '../components/EmptyState.jsx';
@@ -121,14 +121,20 @@ export function ResourcePage({ kind }) {
         </>}
       </div>}
     </section>
+    {kind === 'team' && <section className="grid gap-4 xl:grid-cols-3">
+      <GuidanceCard title="Role Governance" body="Assign the minimum role required for the user to complete transcription, review, or administration responsibilities." />
+      <GuidanceCard title="Credential Control" body="Use temporary credentials for onboarding and require users to update passwords after first access." />
+      <GuidanceCard title="Queue Visibility" body="Active user records can appear in assignment, review, and reporting workflows based on their role." />
+    </section>}
+
     {kind !== 'files' && canCreateTeam && <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
       <div className="mb-5 flex items-start gap-3 border-b border-slate-200 pb-4">
         <div className="grid h-10 w-10 place-items-center rounded-md bg-blue-50 text-primary"><ClipboardCheck size={19} /></div>
         <div>
-          <h3 className="font-bold text-slate-950">{kind === 'team' ? 'Create Team Access Record' : 'Create Project Record'}</h3>
+          <h3 className="font-bold text-slate-950">{kind === 'team' ? 'Provision Team Access' : 'Create Project Record'}</h3>
           <p className="mt-1 text-sm text-slate-500">
             {kind === 'team'
-              ? 'Provision operational access with role, login identity, and initial account credentials.'
+              ? 'Create a controlled user record with login identity, operational role, and initial onboarding credential.'
               : 'Define the client, language, and working guidance that will govern assignment and transcription quality.'}
           </p>
         </div>
@@ -141,7 +147,7 @@ export function ResourcePage({ kind }) {
         {kind === 'team' ? <>
           <div><label>Login ID</label><input className="mt-1.5" placeholder="Unique login identifier" value={form.loginId || ''} onChange={(e) => setForm({ ...form, loginId: e.target.value })} required /></div>
           <div><label>Email address</label><input className="mt-1.5" placeholder="name@example.com" type="email" value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} required /></div>
-          <div><label>Role</label><select className="mt-1.5" value={form.role || 'transcriber'} onChange={(e) => setForm({ ...form, role: e.target.value })}>{teamRoleOptions.map((role) => <option key={role}>{role}</option>)}</select></div>
+          <div><label>Access role</label><select className="mt-1.5" value={form.role || 'transcriber'} onChange={(e) => setForm({ ...form, role: e.target.value })}>{teamRoleOptions.map((role) => <option key={role}>{role}</option>)}</select></div>
           <div className="md:col-span-4"><label>Initial password</label><input className="mt-1.5" placeholder="Temporary credential for first access" value={form.password || ''} onChange={(e) => setForm({ ...form, password: e.target.value })} /></div>
         </> : <>
           <div><label>Client</label><input className="mt-1.5" placeholder="Client or business unit" value={form.client || ''} onChange={(e) => setForm({ ...form, client: e.target.value })} /></div>
@@ -152,7 +158,7 @@ export function ResourcePage({ kind }) {
           <p className="text-sm text-slate-500">
             {kind === 'team' ? 'New users are created as active records and can be managed from the team table.' : 'New projects become available for upload intake, assignment, and reporting workflows.'}
           </p>
-          <button className="btn-primary h-10 px-5"><Plus size={16} /> {kind === 'team' ? 'Create Team Record' : 'Create Project Record'}</button>
+          <button className="btn-primary h-10 px-5"><Plus size={16} /> {kind === 'team' ? 'Create Access Record' : 'Create Project Record'}</button>
         </div>
       </form>
     </section>}
@@ -160,8 +166,8 @@ export function ResourcePage({ kind }) {
     {!items.length ? <EmptyState /> : <section className="rounded-lg border border-slate-200 bg-white shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
         <div>
-          <h3 className="font-bold text-slate-950">{kind === 'files' ? 'Managed Audio Files' : kind === 'team' ? 'Managed Team Records' : 'Managed Projects'}</h3>
-          <p className="mt-1 text-sm text-slate-500">{kind === 'files' ? 'Open workspaces and export transcript assets from one controlled repository.' : 'Review and maintain active operational records.'}</p>
+          <h3 className="font-bold text-slate-950">{kind === 'files' ? 'Managed Audio Files' : kind === 'team' ? 'Access Directory' : 'Managed Projects'}</h3>
+          <p className="mt-1 text-sm text-slate-500">{kind === 'files' ? 'Open workspaces and export transcript assets from one controlled repository.' : kind === 'team' ? 'Review active users, assigned roles, login identities, and availability for operational workflows.' : 'Review and maintain active operational records.'}</p>
         </div>
         <div className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700"><ShieldCheck size={16} /> {items.length} record(s)</div>
       </div>
@@ -198,11 +204,21 @@ function SummaryTile({ label, value, emphasis = false }) {
   </div>;
 }
 
+function GuidanceCard({ title, body }) {
+  return <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-soft">
+    <div className="mb-3 grid h-9 w-9 place-items-center rounded-md bg-slate-100 text-primary"><KeyRound size={17} /></div>
+    <h3 className="font-bold text-slate-950">{title}</h3>
+    <p className="mt-2 text-sm leading-6 text-slate-600">{body}</p>
+  </section>;
+}
+
 function columnLabel(key) {
   const labels = {
     originalFileName: 'Source File',
     assignedTranscriber: 'Assigned Transcriber',
-    isActive: 'Availability'
+    isActive: 'Availability',
+    loginId: 'Login ID',
+    role: 'Access Role'
   };
   return labels[key] || key.replace(/([A-Z])/g, ' $1');
 }
