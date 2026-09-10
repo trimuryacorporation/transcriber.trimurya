@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { UserCheck } from 'lucide-react';
+import { ClipboardCheck, Clock3, ShieldCheck, UserCheck } from 'lucide-react';
 import { api } from '../api/client.js';
 import { StatusBadge } from '../components/StatusBadge.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
@@ -184,43 +184,68 @@ export function ReviewWorkspace({ focus = 'review' }) {
   }
 
   return <div className="space-y-5">
-    {canManageReviewPool && <section className="panel grid gap-3 p-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
-      <div>
-        <label>Project</label>
-        <select value={filters.project} onChange={(e) => { setFilters({ project: e.target.value, language: '' }); setSelectedPool([]); setSelectedTranscriberQueue([]); }}>
-          <option value="">Select project</option>
-          {projects.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}
-        </select>
+    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{isTranscriberQueuePage ? 'Transcriber Allocation' : 'Review Operations'}</p>
+          <h2 className="mt-1 text-2xl font-bold text-slate-950">{isTranscriberQueuePage ? 'Transcriber Queue Control' : 'Review Queue Control'}</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+            {isTranscriberQueuePage
+              ? 'Assign TL-managed audio files to available transcribers with project and language context.'
+              : 'Route submitted transcription work to qualified reviewers and monitor review ownership across active queues.'}
+          </p>
+        </div>
+        {lastUpdated && <div className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700"><Clock3 size={16} /> Updated {lastUpdated.toLocaleTimeString()}</div>}
       </div>
-      <div>
-        <label>Language</label>
-        <input
-          list="review-languages"
-          placeholder={filters.project ? 'Search language' : 'Select project first'}
-          value={filters.language}
-          disabled={!filters.project}
-          onChange={(e) => { setFilters({ ...filters, language: e.target.value }); setSelectedPool([]); setSelectedTranscriberQueue([]); }}
-        />
-        <datalist id="review-languages">
-          {languages.map((language) => <option key={language} value={language} />)}
-        </datalist>
+    </section>
+
+    {canManageReviewPool && <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-soft">
+      <div className="mb-4 flex items-start gap-3">
+        <div className="grid h-10 w-10 place-items-center rounded-md bg-blue-50 text-primary"><ClipboardCheck size={19} /></div>
+        <div>
+          <h3 className="font-bold text-slate-950">{isTranscriberQueuePage ? 'Transcriber Assignment Criteria' : 'Reviewer Assignment Criteria'}</h3>
+          <p className="mt-1 text-sm text-slate-500">Filter by project and language before assigning selected queue items to the appropriate operational owner.</p>
+        </div>
       </div>
-      {!isTranscriberQueuePage && <div>
-        <label>Reviewer User</label>
-        <select value={bulkReviewer} onChange={(e) => setBulkReviewer(e.target.value)}>
-          <option value="">Select reviewer</option>
-          {eligibleReviewers.map((reviewer) => <option key={reviewer._id} value={reviewer._id}>{reviewer.name} - {reviewer.loginId}</option>)}
-        </select>
-      </div>}
-      {isTranscriberQueuePage && <div>
-        <label>Transcriber User</label>
-        <select value={bulkTranscriber} onChange={(e) => setBulkTranscriber(e.target.value)}>
-          <option value="">Select transcriber</option>
-          {eligibleTranscribers.map((transcriber) => <option key={transcriber._id} value={transcriber._id}>{userLabel(transcriber)}</option>)}
-        </select>
-      </div>}
-      {!isTranscriberQueuePage && <button className="btn-accent self-end" onClick={assignReviewer}><UserCheck size={15} /> Assign</button>}
-      {isTranscriberQueuePage && <button className="btn-accent self-end" onClick={assignTranscriber}><UserCheck size={15} /> Assign</button>}
+      <div className="grid gap-3 lg:grid-cols-[1fr_1fr_1fr_auto]">
+        <div>
+          <label>Project scope</label>
+          <select value={filters.project} onChange={(e) => { setFilters({ project: e.target.value, language: '' }); setSelectedPool([]); setSelectedTranscriberQueue([]); }}>
+            <option value="">Select project</option>
+            {projects.map((project) => <option key={project._id} value={project._id}>{project.name}</option>)}
+          </select>
+        </div>
+        <div>
+          <label>Language scope</label>
+          <input
+            list="review-languages"
+            placeholder={filters.project ? 'Search language' : 'Select project first'}
+            value={filters.language}
+            disabled={!filters.project}
+            onChange={(e) => { setFilters({ ...filters, language: e.target.value }); setSelectedPool([]); setSelectedTranscriberQueue([]); }}
+          />
+          <datalist id="review-languages">
+            {languages.map((language) => <option key={language} value={language} />)}
+          </datalist>
+        </div>
+        {!isTranscriberQueuePage && <div>
+          <label>Reviewer owner</label>
+          <select value={bulkReviewer} onChange={(e) => setBulkReviewer(e.target.value)}>
+            <option value="">Select reviewer</option>
+            {eligibleReviewers.map((reviewer) => <option key={reviewer._id} value={reviewer._id}>{reviewer.name} - {reviewer.loginId}</option>)}
+          </select>
+        </div>}
+        {isTranscriberQueuePage && <div>
+          <label>Transcriber owner</label>
+          <select value={bulkTranscriber} onChange={(e) => setBulkTranscriber(e.target.value)}>
+            <option value="">Select transcriber</option>
+            {eligibleTranscribers.map((transcriber) => <option key={transcriber._id} value={transcriber._id}>{userLabel(transcriber)}</option>)}
+          </select>
+        </div>}
+        {!isTranscriberQueuePage && <button className="btn-primary h-10 self-end" onClick={assignReviewer}><UserCheck size={15} /> Assign Reviewer</button>}
+        {isTranscriberQueuePage && <button className="btn-primary h-10 self-end" onClick={assignTranscriber}><UserCheck size={15} /> Assign Transcriber</button>}
+      </div>
+      <p className="mt-4 flex gap-2 rounded-md border border-blue-100 bg-blue-50 p-3 text-sm text-blue-900"><ShieldCheck size={16} className="mt-0.5 shrink-0" /> Assignment changes update queue ownership and downstream visibility for selected files.</p>
     </section>}
 
     {canManageReviewPool && <section className={`grid gap-3 ${isTranscriberQueuePage ? 'md:grid-cols-1' : 'md:grid-cols-5'}`}>
@@ -231,8 +256,6 @@ export function ReviewWorkspace({ focus = 'review' }) {
       {!isTranscriberQueuePage && <SummaryCard label="Transcribers" value={transcriberCount} />}
     </section>}
 
-    {canManageReviewPool && lastUpdated && <p className="text-right text-xs text-slate-500">Live updated {lastUpdated.toLocaleTimeString()}</p>}
-
     {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
     {message && <p className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-700">{message}</p>}
 
@@ -242,14 +265,14 @@ export function ReviewWorkspace({ focus = 'review' }) {
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-bold">Transcriber Queue</h3>
-              <p className="text-sm text-slate-500">{filteredTranscriberQueue.length} matching file(s)</p>
+              <p className="text-sm text-slate-500">{filteredTranscriberQueue.length} file(s) awaiting transcriber ownership</p>
             </div>
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <input className="h-4 w-4" type="checkbox" checked={allTranscriberQueueSelected} onChange={(e) => toggleAllTranscriberQueue(e.target.checked)} />
               Select all
             </label>
           </div>
-          {!filteredTranscriberQueue.length ? <p className="rounded-md border border-dashed border-slate-300 p-3 text-sm text-slate-500">No transcriber queue files match this project/language.</p> : <div className="space-y-2">
+          {!filteredTranscriberQueue.length ? <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-500">No transcriber queue files match the selected project and language criteria.</p> : <div className="space-y-2">
             {filteredTranscriberQueue.map((job) => <div key={job._id} className="cursor-pointer rounded-md border p-3 hover:bg-slate-50" onClick={() => open(job)}>
               <div className="flex items-start gap-3">
                 <input className="mt-1 h-4 w-4" type="checkbox" checked={selectedTranscriberQueue.includes(job._id)} onClick={(e) => e.stopPropagation()} onChange={(e) => toggleTranscriberQueueSelection(job._id, e.target.checked)} />
@@ -270,14 +293,14 @@ export function ReviewWorkspace({ focus = 'review' }) {
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <h3 className="text-lg font-bold">Review Queue</h3>
-              <p className="text-sm text-slate-500">{filteredPool.length} matching file(s)</p>
+              <p className="text-sm text-slate-500">{filteredPool.length} file(s) awaiting reviewer ownership</p>
             </div>
             <label className="flex items-center gap-2 text-sm font-semibold text-slate-700">
               <input className="h-4 w-4" type="checkbox" checked={allPoolSelected} onChange={(e) => toggleAllPool(e.target.checked)} />
               Select all
             </label>
           </div>
-          {!filteredPool.length ? <p className="rounded-md border border-dashed border-slate-300 p-3 text-sm text-slate-500">No files match this project/language.</p> : <div className="space-y-2">
+          {!filteredPool.length ? <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 p-3 text-sm text-slate-500">No submitted files match the selected project and language criteria.</p> : <div className="space-y-2">
             {filteredPool.map((job) => <div key={job._id} className="cursor-pointer rounded-md border p-3 hover:bg-slate-50" onClick={() => open(job)}>
               <div className="flex items-start gap-3">
                 <input className="mt-1 h-4 w-4" type="checkbox" checked={selectedPool.includes(job._id)} onClick={(e) => e.stopPropagation()} onChange={(e) => togglePoolSelection(job._id, e.target.checked)} />
@@ -299,7 +322,13 @@ export function ReviewWorkspace({ focus = 'review' }) {
       </section>
 
       <section className="panel p-4">
-        {!active ? <p className="text-slate-500">Select a file.</p> : <div className="space-y-4">
+        {!active ? <div className="flex min-h-32 items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50 text-center">
+          <div>
+            <ClipboardCheck className="mx-auto text-slate-400" size={24} />
+            <p className="mt-2 text-sm font-semibold text-slate-600">Select a file to inspect assignment details</p>
+            <p className="mt-1 text-xs text-slate-500">Ownership, queue status, and workspace access will appear here.</p>
+          </div>
+        </div> : <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="text-xl font-semibold">{active.originalFileName}</h3>
